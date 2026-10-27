@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "./CartSlice";
 
@@ -42,11 +42,24 @@ const plantCategories = [
 function ProductList() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
-  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const [addedToCart, setAddedToCart] = useState({});
+
+  const cartCount = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
+
+  const handleAddToCart = (plant) => {
+    dispatch(addItem(plant));
+    setAddedToCart((previous) => ({
+      ...previous,
+      [plant.name]: true,
+    }));
+  };
 
   return (
     <div>
-      <nav style={{ padding: "16px", background: "#245b3b", color: "white" }}>
+      <nav style={{ padding: 16, background: "#245b3b", color: "white" }}>
         <strong>Paradise Nursery</strong>
         <span style={{ float: "right" }}>
           <a href="/" style={{ color: "white", marginRight: 16 }}>Home</a>
@@ -66,34 +79,30 @@ function ProductList() {
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
               gap: 20,
-              marginBottom: 32
+              marginBottom: 32,
             }}>
-              {group.plants.map((plant) => {
-                const alreadyAdded = cartItems.some((item) => item.id === plant.id);
-
-                return (
-                  <article key={plant.id} style={{
-                    border: "1px solid #ddd",
-                    borderRadius: 10,
-                    padding: 16,
-                    textAlign: "center"
-                  }}>
-                    <img
-                      src={plant.image}
-                      alt={plant.name}
-                      style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 8 }}
-                    />
-                    <h3>{plant.name}</h3>
-                    <p>₹{plant.price}</p>
-                    <button
-                      disabled={alreadyAdded}
-                      onClick={() => dispatch(addItem(plant))}
-                    >
-                      {alreadyAdded ? "Added to Cart" : "Add to Cart"}
-                    </button>
-                  </article>
-                );
-              })}
+              {group.plants.map((plant) => (
+                <article key={plant.id} style={{
+                  border: "1px solid #ddd",
+                  borderRadius: 10,
+                  padding: 16,
+                  textAlign: "center",
+                }}>
+                  <img
+                    src={plant.image}
+                    alt={plant.name}
+                    style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 8 }}
+                  />
+                  <h3>{plant.name}</h3>
+                  <p>₹{plant.price}</p>
+                  <button
+                    disabled={!!addedToCart[plant.name]}
+                    onClick={() => handleAddToCart(plant)}
+                  >
+                    {addedToCart[plant.name] ? "Added to Cart" : "Add to Cart"}
+                  </button>
+                </article>
+              ))}
             </div>
           </section>
         ))}
